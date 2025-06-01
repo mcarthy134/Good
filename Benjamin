@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>College Draft Room Simulator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+      background: #f7f7f7;
+    }
+    h1 {
+      text-align: center;
+    }
+    #draft-board {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .pick {
+      background: white;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    select {
+      width: 100%;
+    }
+    #results {
+      margin-top: 20px;
+    }
+    #copyButton {
+      margin-top: 10px;
+    }
+    button {
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 1em;
+    }
+    @media (min-width: 600px) {
+      #draft-board {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .pick {
+        flex: 1 0 45%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>🏈 College Draft Room Simulator</h1>
+  <button onclick="resetDraft()">🔄 Restart Draft</button>
+  <div id="draft-board"></div>
+  <div id="results"></div>
+  <button onclick="calculateRating()">🏁 Finish Draft</button>
+  <button id="copyButton" onclick="copyToClipboard()">📋 Copy Share Link</button>
+
+  <script>
+    const players = [
+      "Caleb Downs - S, Ohio State",
+      "Malik Muhammad - DB, Texas",
+      "Nicholas Singleton - RB, Penn State",
+      "Jeremiyah Love - RB, Notre Dame",
+      "Lance St. Louis - DS, Texas",
+      "Rayshaun Benny - DL, Michigan",
+      "Derrick Moore - DE, Michigan",
+      "Sam Leavitt - QB, Arizona State",
+      "LaNorris Sellers - QB, South Carolina",
+      "Rod Moore - S, Michigan",
+      "Miles Byrd - G, San Diego State",
+      "Kaytron Allen - RB, Penn State",
+      "Anthony Hill Jr. - LB, Texas",
+      "Garrett Nussmeier - QB, LSU",
+      "Liona Lefau - LB, Texas",
+      "Michael Taaffe - DB, Texas",
+      "Antonio Williams - WR, Clemson",
+      "Jordyn Tyson - WR, Arizona State",
+      "Zachariah Branch - WR, Georgia",
+      "DJ Lagway - QB, Florida",
+      "Trey Moore - EDGE, Texas",
+      "Will Stone - K, Texas",
+      "John Mateer - QB, Oklahoma",
+      "Jaylon Guilbeau - DB, Texas",
+      "Jeremiah Smith - WR, Ohio State",
+      "Ryan Williams - WR, Alabama",
+      "Cade Klubnik - QB, Clemson",
+      "Dijon Lee - CB, Alabama",
+      "Jayden Virgin-Morgan - LB, Boise State",
+      "Emeka Ballard - WR, Wisconsin",
+      "Zachariah Branch - WR, Georgia",
+      "Rod Moore - S, Michigan",
+      "Antonio Williams - WR, Clemson",
+      "Jeremiyah Love - RB, Notre Dame",
+      "Malik Muhammad - DB, Texas",
+      "Caleb Downs - S, Ohio State",
+      "LaNorris Sellers - QB, South Carolina",
+      "DJ Lagway - QB, Florida",
+      "Ryan Williams - WR, Alabama",
+      "Trey Moore - EDGE, Texas",
+      "Garrett Nussmeier - QB, LSU",
+      "Liona Lefau - LB, Texas",
+      "Rayshaun Benny - DL, Michigan",
+      "Kaytron Allen - RB, Penn State",
+      "Michael Taaffe - DB, Texas",
+      "Will Stone - K, Texas",
+      "Miles Byrd - G, San Diego State",
+      "Sam Leavitt - QB, Arizona State",
+      "Nicholas Singleton - RB, Penn State",
+      "Derrick Moore - DE, Michigan"
+    ];
+
+    const rounds = 3;
+    const picksPerRound = 5;
+    const totalPicks = rounds * picksPerRound;
+
+    const draftBoard = document.getElementById('draft-board');
+
+    function createDraftBoard() {
+      draftBoard.innerHTML = '';
+      for (let i = 0; i < totalPicks; i++) {
+        const pickDiv = document.createElement('div');
+        pickDiv.className = 'pick';
+        pickDiv.innerHTML = `
+          <label>Pick ${i + 1}:</label>
+          <select onchange="saveDraft()">
+            <option value="">-- Select Player --</option>
+            ${players.map(p => `<option value="${p}">${p}</option>`).join('')}
+          </select>
+        `;
+        draftBoard.appendChild(pickDiv);
+      }
+    }
+
+    function saveDraft() {
+      const selections = Array.from(document.querySelectorAll('select')).map(s => s.value);
+      localStorage.setItem('draftSelections', JSON.stringify(selections));
+    }
+
+    function loadDraft() {
+      const saved = JSON.parse(localStorage.getItem('draftSelections') || "[]");
+      const selects = document.querySelectorAll('select');
+      saved.forEach((val, i) => {
+        if (selects[i]) selects[i].value = val;
+      });
+    }
+
+    function resetDraft() {
+      localStorage.removeItem('draftSelections');
+      createDraftBoard();
+    }
+
+    function calculateRating() {
+      const selections = Array.from(document.querySelectorAll('select')).map(s => s.value);
+      let filled = selections.filter(Boolean).length;
+      let grade = 'F';
+      if (filled === totalPicks) grade = 'A';
+      else if (filled >= totalPicks * 0.75) grade = 'B';
+      else if (filled >= totalPicks * 0.5) grade = 'C';
+      else if (filled >= totalPicks * 0.25) grade = 'D';
+
+      document.getElementById('results').innerHTML = `
+        <h2>Your Draft Grade: ${grade}</h2>
+        <p>${filled}/${totalPicks} picks made.</p>
+      `;
+    }
+
+    function copyToClipboard() {
+      const resultText = document.getElementById('results').innerText;
+      navigator.clipboard.writeText(`Check out my draft! 🏈\n${resultText}`).then(() => {
+        alert('Draft result copied to clipboard!');
+      });
+    }
+
+    // Initialize
+    createDraftBoard();
+    loadDraft();
+  </script>
+</body>
+</html>
